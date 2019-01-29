@@ -5,7 +5,7 @@ execute_file <- local({
 
     switch(ext,
       "r" = httppost_rscript(filepath),
-      "rnw" = httppost_knittex(filepath),
+      "rnw" = httppost_knitrnw(filepath),
       "rtex" = httppost_knittex(filepath),
       "rmd" = httppost_knitpandoc(filepath),
       "rrst" = httppost_knitpandoc(filepath),
@@ -38,6 +38,25 @@ execute_file <- local({
     session_eval(knitcall);
   }
 
+    #Does both knitr and pdflatex
+  httppost_knitrnw <- function(filepath){
+    #we are importing knitr now
+    #library(knitr);
+    fnargs <- req$post();   
+    
+    knitcalls <- c(
+      "stopifnot(require(knitr))",
+      "library(tools)",
+      paste0(names(fnargs), "='", fnargs, "'"),
+      paste("knit2pdf(", deparse(filepath),",compiler='xelatex')")
+      #paste("texfile <- knit(", deparse(filepath), ")", sep=""),
+      #"texi2pdf(texfile)"
+    );
+
+    knitcall <- paste(knitcalls, collapse="\n")
+    session_eval(knitcall);
+  }
+  
   #Does both knitr and pdflatex
   httppost_knittex <- function(filepath){
     #we are importing knitr now
